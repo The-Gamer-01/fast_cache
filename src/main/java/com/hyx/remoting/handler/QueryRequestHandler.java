@@ -29,12 +29,12 @@ public class QueryRequestHandler extends AbstractRequestHandler {
         String[] path = uri.split("/");
         String key = path[2];
         String value = null;
-        if(key.length() > RequestConstant.COMPRESS_SIZE) {
-            key = GzipUtil.compress(key);
-            value = GzipUtil.uncompress(fastCache.query(key));
-        } else {
+//        if(key.length() > RequestConstant.COMPRESS_SIZE) {
+//            key = GzipUtil.compress(key);
+//            value = GzipUtil.uncompress(fastCache.query(key));
+//        } else {
             value = fastCache.query(key);
-        }
+//        }
         log.info("[info][query key:{}, value:{}]", key, value);
         if(value != null) {
             return new DefaultFullHttpResponse(

@@ -20,11 +20,15 @@ public class FastCache {
     /**
      * 普通缓存
      */
-    private final Map<String, String> simpleCache = new HashMap<>();
+    private final Map<String, String> simpleCache = new HashMap<String, String>(1 << 24, (float) 0.01);
     
     private final Map<String, ConcurrentSkipListSet<ZaddRequest>> zsetCache = new ConcurrentHashMap<>();
     
     private final LogManager LOG_MANAGER = LogManager.instance();
+    
+    public Map<String, String> getSimpleCache() {
+        return simpleCache;
+    }
     
     private FastCache() {}
     
@@ -80,12 +84,13 @@ public class FastCache {
         List<String> values = new ArrayList<>();
         list.stream().forEach((key) -> {
             String value = null;
-            if(key.length() > RequestConstant.COMPRESS_SIZE) {
-                key = GzipUtil.compress(key);
-                value = GzipUtil.uncompress(simpleCache.get(key));
-            } else {
-                value = simpleCache.get(key);
-            }
+//            if(key.length() > RequestConstant.COMPRESS_SIZE) {
+//                key = GzipUtil.compress(key);
+//                value = GzipUtil.uncompress(simpleCache.get(key));
+//            } else {
+//                value = simpleCache.get(key);
+//            }
+            value = simpleCache.get(key);
             values.add(value);
         });
         return values;
@@ -100,10 +105,10 @@ public class FastCache {
         insertRequests.stream().forEach((insertRequest) -> {
             String key = insertRequest.getKey();
             String value = insertRequest.getValue();
-            if(key.length() > RequestConstant.COMPRESS_SIZE) {
-                key = GzipUtil.compress(insertRequest.getKey());
-                value = GzipUtil.compress(insertRequest.getValue());
-            }
+//            if(key.length() > RequestConstant.COMPRESS_SIZE) {
+//                key = GzipUtil.compress(insertRequest.getKey());
+//                value = GzipUtil.compress(insertRequest.getValue());
+//            }
             simpleCache.put(key, value);
         });
         return true;

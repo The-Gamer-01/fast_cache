@@ -62,10 +62,10 @@ public class LogManager {
                     Map.Entry<byte[], byte[]> entry = iterator.next();
                     String key = new String(entry.getKey());
                     String value = new String(entry.getValue());
-                    if(key.length() > RequestConstant.COMPRESS_SIZE) {
-                        key = GzipUtil.compress(key);
-                        value = GzipUtil.compress(value);
-                    }
+//                    if(key.length() > RequestConstant.COMPRESS_SIZE) {
+//                        key = GzipUtil.compress(key);
+//                        value = GzipUtil.compress(value);
+//                    }
                     log.info("[init][key:{}, valie:{}]", key, value);
                     cache.put(key, value);
                 }

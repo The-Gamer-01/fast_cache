@@ -31,11 +31,11 @@ public class DelRequestHandler extends AbstractRequestHandler {
         String uri = httpRequest.uri();
         String[] path = uri.split("/");
         String key = path[2];
-        if(key.length() > RequestConstant.COMPRESS_SIZE) {
-            key = GzipUtil.compress(key);
-        }
+//        if(key.length() > RequestConstant.COMPRESS_SIZE) {
+//            key = GzipUtil.compress(key);
+//        }
         fastCache.del(key);
-//        writeLog(key);
+        writeLog(key);
         return new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
     }
 }

@@ -3,6 +3,8 @@ package com.hyx.remoting.handler;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.FullHttpRequest;
 
+import java.io.IOException;
+
 /**
  * 请求处理策略对象接口
  * @author hyx
@@ -15,5 +17,5 @@ public interface RequestHandler {
      * @param httpRequest 请求
      * @return 响应
      */
-    DefaultFullHttpResponse handler(FullHttpRequest httpRequest);
+    DefaultFullHttpResponse handler(FullHttpRequest httpRequest) throws IOException;
 }

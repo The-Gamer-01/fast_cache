@@ -11,6 +11,8 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.IOException;
+
 /**
  * @author hyx
  **/
@@ -30,11 +32,9 @@ public class DispatcherHandler extends SimpleChannelInboundHandler<FullHttpReque
     private RequestHandlerManager requestHandlerManager = RequestHandlerManager.INSTANCE();
     
     @Override
-    protected void channelRead0(ChannelHandlerContext channelHandlerContext, FullHttpRequest request) {
+    protected void channelRead0(ChannelHandlerContext channelHandlerContext, FullHttpRequest request)
+            throws IOException {
         DefaultFullHttpResponse response = requestHandlerManager.handler(request);
-        channelHandlerContext.channel().eventLoop().execute(() -> {
-            log.info("response:{}", response);
-            channelHandlerContext.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
-        });
+        channelHandlerContext.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
     }
 }

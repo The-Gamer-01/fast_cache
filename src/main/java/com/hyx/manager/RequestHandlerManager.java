@@ -13,6 +13,7 @@ import com.hyx.remoting.handler.ZrmvRequestHandler;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.FullHttpRequest;
 
+import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -42,7 +43,7 @@ public class RequestHandlerManager {
         return INSTANCE;
     }
     
-    public DefaultFullHttpResponse handler(FullHttpRequest fullHttpRequest) {
+    public DefaultFullHttpResponse handler(FullHttpRequest fullHttpRequest) throws IOException {
         String uri = fullHttpRequest.uri();
         String[] path = uri.split("/");
         return requestHandlerMap.get(path[1]).handler(fullHttpRequest);

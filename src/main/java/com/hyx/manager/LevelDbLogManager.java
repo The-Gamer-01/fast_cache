@@ -12,6 +12,7 @@ import org.omg.PortableInterceptor.INACTIVE;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 
@@ -27,71 +28,55 @@ public class LevelDbLogManager {
         return INSTANCE;
     }
     
-    public void writeKeyValue(String key, String value) {
-        DBFactory factory = new Iq80DBFactory();
-        Options options = new Options();
-        DB db = null;
+    private DBFactory factory;
+    
+    private Options options;
+    
+    private DB db;
+    
+    private List<InsertRequest> batchList;
+    
+    private WriteBatch writeBatch;
+    
+    private static final Integer MAX_CAPACITY = 1 << 8;
+    
+    private LevelDbLogManager() {
+        init();
+    }
+    
+    private void init() {
         try {
-            db = factory.open(new File("/data"), options);
-            WriteOptions writeOptions = new WriteOptions().sync(true);
-            db.put(key.getBytes(), value.getBytes(), writeOptions);
+            this.factory = new Iq80DBFactory();
+            this.options = new Options();
+            this.db = factory.open(new File("/data"), options);
+            this.batchList = new ArrayList<>();
+            this.writeBatch = db.createWriteBatch();
         } catch (IOException e) {
             e.printStackTrace();
-        } finally {
-            if(db != null) {
-                try {
-                    db.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
         }
+    }
+    
+    public void writeKeyValue(String key, String value) throws IOException {
+        batchList.add(new InsertRequest(key, value));
     }
     
     public void delKeyValue(String key) {
-        DBFactory factory = new Iq80DBFactory();
-        Options options = new Options();
-        DB db = null;
-        try {
-            db = factory.open(new File("/data"), options);
-            db.delete(key.getBytes());
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            if(db != null) {
-                try {
-                    db.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
+        db.delete(key.getBytes());
     }
     
-    public void batchWriteKeyValue(List<InsertRequest>insertRequests) {
-        DBFactory factory = new Iq80DBFactory();
-        Options options = new Options();
-        DB db = null;
-        try {
-            db = factory.open(new File("/data"), options);
-            WriteBatch writeBatch = db.createWriteBatch();
-            for (InsertRequest insertRequest : insertRequests) {
-                String key = GzipUtil.compress(insertRequest.getKey());
-                String value = GzipUtil.compress(insertRequest.getValue());
+    public void batchWriteKeyValue(List<InsertRequest> insertRequests) throws IOException {
+        batchList.addAll(insertRequests);
+    }
+    
+    public void check() {
+        if(batchList.size() >= MAX_CAPACITY) {
+            for (InsertRequest insertRequest : batchList) {
+                String key = insertRequest.getKey();
+                String value = insertRequest.getValue();
                 writeBatch.put(key.getBytes(), value.getBytes());
             }
             db.write(writeBatch);
-            writeBatch.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            if(db != null) {
-                try {
-                    db.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
+            batchList.clear();
         }
     }
 }

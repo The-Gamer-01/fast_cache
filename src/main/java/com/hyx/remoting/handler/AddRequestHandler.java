@@ -19,6 +19,7 @@ import org.iq80.leveldb.DBFactory;
 import org.iq80.leveldb.Options;
 import org.iq80.leveldb.impl.Iq80DBFactory;
 
+import java.io.IOException;
 import java.util.Map;
 
 /**
@@ -35,13 +36,13 @@ public class AddRequestHandler extends AbstractRequestHandler {
     
     protected Map<String, Object> JSON_CACHE = JsonManager.instance();
     
-    private void writeLog(String key, String value) {
+    private void writeLog(String key, String value) throws IOException {
         LevelDbLogManager instance = LevelDbLogManager.instance();
         instance.writeKeyValue(key, value);
     }
     
     @Override
-    public DefaultFullHttpResponse handler(FullHttpRequest httpRequest) {
+    public DefaultFullHttpResponse handler(FullHttpRequest httpRequest) throws IOException {
         String params = httpRequest.content().toString(CharsetUtil.UTF_8);
         InsertRequest insertRequest = null;
         if(JSON_CACHE.containsKey(params)) {
@@ -54,12 +55,12 @@ public class AddRequestHandler extends AbstractRequestHandler {
             log.info("[info][add key:{}, value:{}]", insertRequest.getKey(), insertRequest.getValue());
             String key = insertRequest.getKey();
             String value = insertRequest.getValue();
-            if(key.length() > RequestConstant.COMPRESS_SIZE) {
-                key = GzipUtil.compress(insertRequest.getKey());
-                value = GzipUtil.compress(insertRequest.getValue());
-            }
+//            if(key.length() > RequestConstant.COMPRESS_SIZE) {
+//                key = GzipUtil.compress(insertRequest.getKey());
+//                value = GzipUtil.compress(insertRequest.getValue());
+//            }
             fastCache.add(key, value);
-            //            writeLog(key, value);
+            writeLog(key, value);
             return new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
         } else {
             return new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.BAD_REQUEST);
